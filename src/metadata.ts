@@ -1,0 +1,1 @@
+export const ENDPOINTS_METADATA_SYMBOL = Symbol.for('Hors:Endpoints');
