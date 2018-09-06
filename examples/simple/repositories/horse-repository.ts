@@ -1,6 +1,5 @@
 import { injectable } from '../../../src';
-import { IRepository } from '../types';
-import { HorseEntity } from '../entities';
+import { IRepository, HorseEntity } from '../types';
 
 @injectable()
 export class HorseRepository implements IRepository<HorseEntity> {

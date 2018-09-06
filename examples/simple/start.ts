@@ -1,7 +1,6 @@
 import { HorsServer, Container, Express } from '../../src';
 
 import * as types from './types';
-import { HorseEntity } from './entities';
 import HorseRepository from './repositories/horse-repository';
 
 import './endpoints';
@@ -24,7 +23,7 @@ const expressAppConfigurer = (expressApp: Express) => {
 const iocContainerConfigurer = (iocContainer: Container) => {
 
     iocContainer
-        .bind<types.IRepository<HorseEntity>>(types.SymbolHorseRepository)
+        .bind<types.IRepository<types.HorseEntity>>(types.SymbolHorseRepository)
         .to(HorseRepository);
 
 }

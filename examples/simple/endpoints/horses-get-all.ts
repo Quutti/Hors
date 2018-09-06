@@ -1,7 +1,6 @@
 import { apiEndpoint, Endpoint, Transaction, inject } from '../../../src';
 
-import { IRepository, SymbolHorseRepository } from '../types';
-import { HorseEntity } from '../entities';
+import { IRepository, SymbolHorseRepository, HorseEntity } from '../types';
 
 @apiEndpoint('get', '/api/v1/horses', true)
 export class HorsesGetAllEndpoint extends Endpoint {

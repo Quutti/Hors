@@ -7,3 +7,10 @@ export interface IRepository<T> {
     insert(item: T): Promise<number>;
     delete(id: number): Promise<boolean>;
 }
+
+export interface HorseEntity {
+    id?: number;
+    color: string;
+    legCount: number;
+    weight: number;
+}
