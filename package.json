@@ -4,9 +4,9 @@
   "description": "Node.js API framework",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "./node_modules/.bin/tsc -p tsconfig.production.json",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "./node_modules/.bin/ts-node ./src/demo/start.ts"
+    "example-simple": "./node_modules/.bin/ts-node ./src/demo/start.ts"
   },
   "keywords": [
     "api",
