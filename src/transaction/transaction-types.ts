@@ -1,4 +1,4 @@
-import { Request, RequestHandler, ErrorRequestHandler, NextFunction } from 'express';
+import { Request, NextFunction } from 'express';
 
 import Transaction from './transaction';
 
