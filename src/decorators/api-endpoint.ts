@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { ENDPOINTS_METADATA_SYMBOL } from '../metadata';
-import { EndpointMiddleware } from '../transaction/transaction-utils';
+import { EndpointMiddleware } from '../transaction/transaction-types';
 
 export type ApiHttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 

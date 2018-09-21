@@ -6,16 +6,9 @@ import 'reflect-metadata';
 import { Endpoint } from './endpoint';
 import * as metadata from './metadata';
 import { IBindSimpleEvent, SimpleEvent } from './simple-event';
-import {
-    createExpressHandler,
-    createExpressMiddleware,
-    createExpressErrorHandler,
-    EndpointHandler,
-    EndpointErrorHandler,
-    EndpointMiddleware,
-    RequestWithTransaction
-} from './transaction/transaction-utils';
-import { Transaction } from './transaction/transaction';
+import Transaction from './transaction/transaction';
+import { EndpointHandler, EndpointErrorHandler, EndpointMiddleware, RequestWithTransaction } from './transaction/transaction-types';
+import { createExpressHandler, createExpressMiddleware, createExpressErrorHandler } from './transaction/transaction-utils';
 import { StoredEndpoint, ApiHttpMethod } from './decorators/api-endpoint';
 
 type EndpointRegisterType = {
