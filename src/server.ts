@@ -6,9 +6,9 @@ import {
     createExpressHandler,
     createExpressMiddleware,
     createExpressErrorHandler,
-    EndpointTransactionHandler,
-    EndpointTransactionErrorHandler,
-    EndpointTransactionMiddleware,
+    EndpointHandler,
+    EndpointErrorHandler,
+    EndpointMiddleware,
     addTransactionMiddleware
 } from './transaction/transaction-utils';
 import { Endpoint } from './endpoint';
@@ -27,10 +27,11 @@ export class HorsServer {
 
     private iocContainer: Container = new Container();
     private app: express.Express = express();
-    private authenticationMiddleware: EndpointTransactionMiddleware = null;
-    private errorHandler: EndpointTransactionErrorHandler = null;
-    private notFoundHandler: EndpointTransactionHandler = null;
+    private authenticationMiddleware: EndpointMiddleware = null;
+    private errorHandler: EndpointErrorHandler = null;
+    private notFoundHandler: EndpointHandler = null;
 
+    // Hooks
     public onListen: IBindSimpleEvent<number> = new SimpleEvent<number>();
     public onRegisterEndpoint: IBindSimpleEvent<EndpointRegisterType> = new SimpleEvent<EndpointRegisterType>();
 
@@ -48,17 +49,17 @@ export class HorsServer {
         return this;
     }
 
-    public setAuthenticationMiddleware(middleware: EndpointTransactionMiddleware): HorsServer {
+    public setAuthenticationMiddleware(middleware: EndpointMiddleware): HorsServer {
         this.authenticationMiddleware = middleware;
         return this;
     }
 
-    public setErrorHandler(handler: EndpointTransactionErrorHandler): HorsServer {
+    public setErrorHandler(handler: EndpointErrorHandler): HorsServer {
         this.errorHandler = handler;
         return this;
     }
 
-    public setNotFoundHandler(handler: EndpointTransactionHandler): HorsServer {
+    public setNotFoundHandler(handler: EndpointHandler): HorsServer {
         this.notFoundHandler = handler;
         return this;
     }
@@ -93,8 +94,9 @@ export class HorsServer {
             // Extract needed information from the endpoint object
             const { url, method, publicEndpoint, target } = endpoint;
 
-            // Set target into iocContainer and retrieve it immdiatly, this injects the
-            // dependencies
+            // Set target into iocContainer and retrieve it immediatly,
+            // by doing this we have now instance with dependencies injected
+            // by inversify
             this.iocContainer.bind(target).toSelf();
             const instance = this.iocContainer.get<Endpoint>(target);
             const handler = instance.handle.bind(instance);
