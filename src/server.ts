@@ -1,7 +1,11 @@
+import { Container } from 'inversify';
 import * as express from 'express';
-
+import * as uuid from 'uuid';
 import 'reflect-metadata';
 
+import { Endpoint } from './endpoint';
+import * as metadata from './metadata';
+import { IBindSimpleEvent, SimpleEvent } from './simple-event';
 import {
     createExpressHandler,
     createExpressMiddleware,
@@ -9,13 +13,10 @@ import {
     EndpointHandler,
     EndpointErrorHandler,
     EndpointMiddleware,
-    addTransactionMiddleware
+    RequestWithTransaction
 } from './transaction/transaction-utils';
-import { Endpoint } from './endpoint';
+import { Transaction } from './transaction/transaction';
 import { StoredEndpoint, ApiHttpMethod } from './decorators/api-endpoint';
-import * as metadata from './metadata';
-import { IBindSimpleEvent, SimpleEvent } from './simple-event';
-import { Container } from 'inversify';
 
 type EndpointRegisterType = {
     method: ApiHttpMethod;
@@ -32,19 +33,20 @@ export class HorsServer {
     private notFoundHandler: EndpointHandler = null;
 
     // Hooks
+    public onTransactionStart: IBindSimpleEvent<Transaction> = new SimpleEvent<Transaction>();
+    public onTransactionEnd: IBindSimpleEvent<Transaction> = new SimpleEvent<Transaction>();
     public onListen: IBindSimpleEvent<number> = new SimpleEvent<number>();
     public onRegisterEndpoint: IBindSimpleEvent<EndpointRegisterType> = new SimpleEvent<EndpointRegisterType>();
 
     public start(port: number): HorsServer {
         // Register middleware to add transaction into request object
-        this.app.use(addTransactionMiddleware);
+        this.app.use(this.createAddTransactionMiddleware());
 
         // Register own endpoints
         this.registerEndpoints();
 
-        this.app.listen(port, () => {
-            (this.onListen as SimpleEvent<number>).fire(port);
-        });
+        // Trigger a onListen hook when server starts listening the given port
+        this.app.listen(port, () => (this.onListen as SimpleEvent<number>).fire(port));
 
         return this;
     }
@@ -79,7 +81,7 @@ export class HorsServer {
      */
     private registerEndpoints() {
 
-        const prefixUrl = (url: string): string => (url[0] === '/') ? url : `/${url}`;
+        const prefixUrl = (url: string): string => (url.charAt(0) === '/') ? url : `/${url}`;
 
         const authCheckingMiddleware = (this.authenticationMiddleware) ?
             createExpressMiddleware(this.authenticationMiddleware)
@@ -92,7 +94,8 @@ export class HorsServer {
 
         endpoints.forEach(endpoint => {
             // Extract needed information from the endpoint object
-            const { url, method, publicEndpoint, target } = endpoint;
+            const { method, publicEndpoint, target } = endpoint;
+            const url = prefixUrl(endpoint.url);
 
             // Set target into iocContainer and retrieve it immediatly,
             // by doing this we have now instance with dependencies injected
@@ -109,17 +112,15 @@ export class HorsServer {
                 middleware.unshift(authCheckingMiddleware);
             }
 
-            const prefixedUrl = prefixUrl(url);
-
             (this.onRegisterEndpoint as SimpleEvent<EndpointRegisterType>).fire({
+                url,
                 method,
-                isPublic: publicEndpoint,
-                url: prefixedUrl
+                isPublic: publicEndpoint
             });
 
             // Register endpoint to Express app
             this.app[method](
-                prefixedUrl,
+                url,
                 middleware,
                 createExpressHandler(handler)
             );
@@ -128,6 +129,29 @@ export class HorsServer {
         // Register not found and error handlers
         this.notFoundHandler && this.app.use(createExpressHandler(this.notFoundHandler));
         this.errorHandler && this.app.use(createExpressErrorHandler(this.errorHandler));
+    }
+
+    /**
+     * Creates a middleware for constracting the Transaction and injecting it into express request
+     */
+    private createAddTransactionMiddleware(): express.RequestHandler {
+        return (request: RequestWithTransaction, response, next) => {
+            const correlationId = uuid.v4();
+            const transaction = new Transaction(
+                request,
+                response,
+                correlationId,
+                () => (this.onTransactionEnd as SimpleEvent<Transaction>).fire(transaction)
+            );
+
+            // Trigger a onTransactionStart -hook
+            (this.onTransactionStart as SimpleEvent<Transaction>).fire(transaction);
+
+            // Set transaction into request
+            request.transaction = transaction;
+
+            next();
+        }
     }
 
 }

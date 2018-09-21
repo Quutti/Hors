@@ -6,6 +6,8 @@ export type TransactionRequestInfo = {
     ipAddress: string;
 }
 
+type OnTransactionEndCallback = () => void;
+
 export class Transaction {
 
     public send: Send = null;
@@ -14,12 +16,12 @@ export class Transaction {
     private request: Request = null;
     private response: Response = null;
 
-    constructor(request: Request, response: Response, correlationId: string) {
+    constructor(request: Request, response: Response, correlationId: string, onEndCallback: OnTransactionEndCallback) {
         this.request = request;
         this.response = response;
         this.correlationId = correlationId;
 
-        this.send = new Send(this.response);
+        this.send = new Send(this.response, onEndCallback);
     }
 
     public getBody(): { [key: string]: any } {
@@ -62,9 +64,11 @@ type SendEnvelope = {
 
 class Send {
     private response: Response = null;
+    private onEndCallback: OnTransactionEndCallback = null;
 
-    constructor(response: Response) {
+    constructor(response: Response, onEndCallback: OnTransactionEndCallback) {
         this.response = response;
+        this.onEndCallback = onEndCallback;
     }
 
     public ok(payload?: SendPayload) {
@@ -73,6 +77,10 @@ class Send {
 
     public created(payload?: SendPayload) {
         this.send(201, payload);
+    }
+
+    public noContent() {
+        this.send(204);
     }
 
     public badRequest(messages: string[]) {
@@ -90,6 +98,10 @@ class Send {
 
     public notFound() {
         this.sendError(404);
+    }
+
+    public methodNotAllowed() {
+        this.sendError(405);
     }
 
     public internalServerError() {
@@ -120,6 +132,8 @@ class Send {
         this.response
             .status(statusCode)
             .json(envelope);
+
+        this.onEndCallback();
     }
 }
 
