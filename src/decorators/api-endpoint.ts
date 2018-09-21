@@ -17,7 +17,7 @@ export const apiEndpoint = (method: ApiHttpMethod, url: string, publicEndpoint: 
 
         endpoints.forEach(endpoint => {
             if (endpoint.method === method && endpoint.url === url) {
-                throw new Error('Duplicate!');
+                throw new Error(`Duplicate endpoint registered (${method.toLocaleUpperCase()} ${url})`);
             }
         });
 
