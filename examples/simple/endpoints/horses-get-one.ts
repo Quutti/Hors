@@ -2,7 +2,11 @@ import { apiEndpoint, Endpoint, Transaction, inject } from '../../../src';
 
 import { IRepository, SymbolHorseRepository, HorseEntity } from '../types';
 
-@apiEndpoint('get', '/api/v1/horses/:horseId', true)
+@apiEndpoint({
+    method: 'get',
+    url: '/api/v1/horses/:horseId',
+    public: true
+})
 export class HorsesGetOneEndpoint extends Endpoint {
 
     constructor(

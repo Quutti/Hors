@@ -11,8 +11,15 @@ export interface StoredEndpoint {
     target: any;
 }
 
-export const apiEndpoint = (method: ApiHttpMethod, url: string, publicEndpoint: boolean = false) => {
+export interface ApiEndpointSettings {
+    method: ApiHttpMethod;
+    url: string;
+    public?: boolean;
+}
+
+export const apiEndpoint = (settings: ApiEndpointSettings) => {
     return (target: any) => {
+        const { method, url, public: publicEndpoint } = settings;
         const endpoints: StoredEndpoint[] = Reflect.getMetadata(ENDPOINTS_METADATA_SYMBOL, Reflect) || [];
 
         endpoints.forEach(endpoint => {
