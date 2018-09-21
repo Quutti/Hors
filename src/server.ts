@@ -83,10 +83,12 @@ export class HorsServer {
 
         const prefixUrl = (url: string): string => (url.charAt(0) === '/') ? url : `/${url}`;
 
-        const authCheckingMiddleware = (this.authenticationMiddleware) ?
+        // Convert auth middleware into express middlewares
+        const authExpressMiddleware = (this.authenticationMiddleware) ?
             createExpressMiddleware(this.authenticationMiddleware)
             : null;
 
+        // Get endpoints from the Reflect metadata
         const endpoints: StoredEndpoint[] = Reflect.getMetadata(
             metadata.ENDPOINTS_METADATA_SYMBOL,
             Reflect
@@ -94,7 +96,7 @@ export class HorsServer {
 
         endpoints.forEach(endpoint => {
             // Extract needed information from the endpoint object
-            const { method, publicEndpoint, target } = endpoint;
+            const { method, public: isPublic, target, middleware } = endpoint;
             const url = prefixUrl(endpoint.url);
 
             // Set target into iocContainer and retrieve it immediatly,
@@ -104,24 +106,27 @@ export class HorsServer {
             const instance = this.iocContainer.get<Endpoint>(target);
             const handler = instance.handle.bind(instance);
 
-            const middleware: express.RequestHandler[] = [];
+            // Convert endpoint middlewares into express middlewares
+            const expressMiddleware: express.RequestHandler[] = middleware.map(middleware =>
+                createExpressMiddleware(middleware));
 
-            // Add authentication middleware into chain if endpoint
-            // needs a auhenticaiton
-            if (!publicEndpoint && authCheckingMiddleware) {
-                middleware.unshift(authCheckingMiddleware);
+            // Add authentication middleware into beginning of the middleware array
+            // if endpoint needs a auhenticaiton
+            if (!isPublic && authExpressMiddleware) {
+                expressMiddleware.unshift(authExpressMiddleware);
             }
 
+            // Trigger a onRegisterEndpoint hook
             (this.onRegisterEndpoint as SimpleEvent<EndpointRegisterType>).fire({
                 url,
                 method,
-                isPublic: publicEndpoint
+                isPublic
             });
 
             // Register endpoint to Express app
             this.app[method](
                 url,
-                middleware,
+                expressMiddleware,
                 createExpressHandler(handler)
             );
         });
