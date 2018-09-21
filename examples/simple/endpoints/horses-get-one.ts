@@ -2,7 +2,7 @@ import { apiEndpoint, Endpoint, Transaction, inject } from '../../../src';
 
 import { IRepository, SymbolHorseRepository, HorseEntity } from '../types';
 
-@apiEndpoint('get', '/api/v1/horse/:horseId', true)
+@apiEndpoint('get', '/api/v1/horses/:horseId', true)
 export class HorsesGetOneEndpoint extends Endpoint {
 
     constructor(
@@ -14,7 +14,9 @@ export class HorsesGetOneEndpoint extends Endpoint {
     public async handle(transaction: Transaction) {
         const horseId = parseInt(transaction.getParams().horseId, 10);
         if (!horseId) {
-            return transaction.send.badRequest([`Invalid horse id ${horseId}`]);
+            return transaction.send.badRequest([{
+                message: `Invalid horse id ${transaction.getParams().horseId}`
+            }]);
         }
 
         const horse = await this.horseRepository.getOne(horseId);

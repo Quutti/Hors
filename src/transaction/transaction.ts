@@ -54,7 +54,7 @@ export class Transaction {
 }
 
 type SendPayload = { [key: string]: any } | Array<{ [key: string]: any }>;
-type SendError = { [key: string]: any };
+type SendError = any[];
 
 type SendEnvelope = {
     statusCode: number;
@@ -83,8 +83,8 @@ class Send {
         this.send(204);
     }
 
-    public badRequest(messages: string[]) {
-        const errors: SendError[] = messages.map(message => ({ message }));
+    public badRequest(errorOrArray: any | any[]) {
+        const errors = Array.isArray(errorOrArray) ? errorOrArray : [errorOrArray];
         this.sendError(400, errors);
     }
 
@@ -118,7 +118,7 @@ class Send {
         this.finalizeSend(statusCode, envelope);
     }
 
-    private sendError(statusCode: number, errors?: Array<SendPayload>) {
+    private sendError(statusCode: number, errors: Array<SendError> = null) {
         const envelope: SendEnvelope = { statusCode };
 
         if (errors) {
