@@ -1,5 +1,4 @@
 import { Request, RequestHandler, ErrorRequestHandler, NextFunction } from 'express';
-import * as uuid from 'uuid';
 
 import Transaction from './transaction';
 
@@ -39,15 +38,4 @@ export const createExpressMiddleware = (middleware: EndpointMiddleware): Request
         const { transaction } = request;
         middleware(transaction, next);
     }
-}
-
-/**
- * Middleware for adding a transaction into request object for later retrieval
- */
-export const addTransactionMiddleware: RequestHandler = (request: RequestWithTransaction, response, next) => {
-    const correlationId = uuid.v4();
-
-    request.transaction = new Transaction(request, response, correlationId);
-
-    next();
 }
