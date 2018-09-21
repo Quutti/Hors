@@ -75,6 +75,10 @@ class Send {
         this.send(201, payload);
     }
 
+    public noContent() {
+        this.send(204);
+    }
+
     public badRequest(messages: string[]) {
         const errors: SendError[] = messages.map(message => ({ message }));
         this.sendError(400, errors);
@@ -90,6 +94,10 @@ class Send {
 
     public notFound() {
         this.sendError(404);
+    }
+
+    public methodNotAllowed() {
+        this.sendError(405);
     }
 
     public internalServerError() {
