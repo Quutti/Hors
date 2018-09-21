@@ -1,7 +1,8 @@
 type SimpleEventHandler<T> = (data: T) => void;
 
 export interface IBindSimpleEvent<T> {
-    bind(handler: SimpleEventHandler<T>);
+    bind(handler: SimpleEventHandler<T>): number;
+    unbind(id: number): void;
 }
 
 export interface IFireSimpleEvent<T> {
@@ -10,25 +11,21 @@ export interface IFireSimpleEvent<T> {
 
 export class SimpleEvent<T> implements IBindSimpleEvent<T>, IFireSimpleEvent<T> {
 
-    private handlers: Array<SimpleEventHandler<T>> = [];
+    private runningId: number = 0;
+    private handlers: { [key: string]: SimpleEventHandler<T> } = {};
 
     public fire(data: T): void {
-        this.handlers.forEach(handler => {
-            if (typeof data === 'object') {
-                const tmp = (Array.isArray(data))
-                    ? [...data]
-                    : { ...data as { [key: string]: any } };
-                handler(tmp as T);
-            } else {
-                handler(data);
-            }
-        });
+        Object.keys(this.handlers).forEach(idKey => this.handlers[idKey](data));
     }
 
-    public bind(handler: SimpleEventHandler<T>) {
-        if (this.handlers.indexOf(handler) === -1) {
-            this.handlers.push(handler);
-        }
+    public bind(handler: SimpleEventHandler<T>): number {
+        const id = this.runningId++;
+        this.handlers[`${id}`] = handler;
+        return id;
+    }
+
+    public unbind(id: number): void {
+        delete this.handlers[`${id}`];
     }
 
 }
