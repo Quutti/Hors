@@ -54,7 +54,7 @@ export class Transaction {
 }
 
 type SendPayload = { [key: string]: any } | Array<{ [key: string]: any }>;
-type SendError = any[];
+type SendError = any | any[];
 
 type SendEnvelope = {
     statusCode: number;
@@ -83,29 +83,28 @@ class Send {
         this.send(204);
     }
 
-    public badRequest(errorOrArray: any | any[]) {
-        const errors = Array.isArray(errorOrArray) ? errorOrArray : [errorOrArray];
-        this.sendError(400, errors);
+    public badRequest(errorOrArray?: SendError) {
+        this.sendError(400, errorOrArray);
     }
 
-    public unauthorized() {
-        this.sendError(401);
+    public unauthorized(errorOrArray?: SendError) {
+        this.sendError(401, errorOrArray);
     }
 
-    public forbidden() {
-        this.sendError(403);
+    public forbidden(errorOrArray?: SendError) {
+        this.sendError(403, errorOrArray);
     }
 
-    public notFound() {
-        this.sendError(404);
+    public notFound(errorOrArray?: SendError) {
+        this.sendError(404, errorOrArray);
     }
 
-    public methodNotAllowed() {
-        this.sendError(405);
+    public methodNotAllowed(errorOrArray?: SendError) {
+        this.sendError(405, errorOrArray);
     }
 
-    public internalServerError() {
-        this.sendError(500);
+    public internalServerError(errorOrArray?: SendError) {
+        this.sendError(500, errorOrArray);
     }
 
     private send(statusCode: number, payload?: SendPayload) {
@@ -118,10 +117,11 @@ class Send {
         this.finalizeSend(statusCode, envelope);
     }
 
-    private sendError(statusCode: number, errors: Array<SendError> = null) {
+    private sendError(statusCode: number, errors: SendError = null) {
         const envelope: SendEnvelope = { statusCode };
 
         if (errors) {
+            errors = Array.isArray(errors) ? errors : [errors];
             envelope.errors = errors;
         }
 
