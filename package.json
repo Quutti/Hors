@@ -3,16 +3,26 @@
   "version": "0.0.1",
   "description": "Node.js API framework",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "homepage": "https://github.com/Quutti/Hors#readme",
+  "bugs": {
+    "url": "https://github.com/Quutti/Hors/issues"
+  },
   "scripts": {
     "build": "./node_modules/.bin/tsc -p tsconfig.production.json",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example:simple": "./node_modules/.bin/ts-node ./examples/simple/start.ts"
+    "example:simple": "./node_modules/.bin/ts-node ./examples/simple/start.ts",
+    "prepare": "npm run build"
   },
   "keywords": [
     "api",
     "framework",
     "hors"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quutti/Hors.git"
+  },
   "author": "Jokke Liikkanen <quutticode@gmail.com>",
   "license": "MIT",
   "dependencies": {
