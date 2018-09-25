@@ -8,13 +8,14 @@ export type TransactionRequestInfo = {
 
 type OnTransactionEndCallback = () => void;
 
-export class Transaction {
+export class Transaction<UserType = any> {
 
     public send: Send = null;
 
     private correlationId: string = null;
     private request: Request = null;
     private response: Response = null;
+    private user: UserType = null;
 
     constructor(request: Request, response: Response, correlationId: string, onEndCallback: OnTransactionEndCallback) {
         this.request = request;
@@ -48,9 +49,18 @@ export class Transaction {
         }
     }
 
+    public getUser(): UserType {
+        return this.user;
+    }
+
     public setCookie(name: string, value: string) {
         this.response.cookie(name, value);
     }
+
+    public setUser(user: UserType) {
+        this.user = user;
+    }
+
 }
 
 type SendPayload = { [key: string]: any } | Array<{ [key: string]: any }>;
