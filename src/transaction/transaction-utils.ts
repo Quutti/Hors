@@ -1,6 +1,8 @@
 import { RequestHandler, ErrorRequestHandler } from 'express';
+import { Container } from 'inversify';
 
 import { EndpointHandler, EndpointErrorHandler, EndpointMiddleware, RequestWithTransaction } from './transaction-types';
+
 
 /**
  * Converts a transaction based endpoint handler into Express endpoint handler
@@ -25,9 +27,9 @@ export const createExpressErrorHandler = (handler: EndpointErrorHandler): ErrorR
 /**
  * Converts a transaction based middleware into Express middleware
  */
-export const createExpressMiddleware = (middleware: EndpointMiddleware): RequestHandler => {
+export const createExpressMiddleware = (middleware: EndpointMiddleware, iocContainer: Container): RequestHandler => {
     return (request: RequestWithTransaction, response, next) => {
         const { transaction } = request;
-        middleware(transaction, next);
+        middleware(transaction, iocContainer, next);
     }
 }

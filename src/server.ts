@@ -78,7 +78,7 @@ export class HorsServer {
 
         // Convert auth middleware into express middlewares
         const authExpressMiddleware = (this.authenticationMiddleware) ?
-            createExpressMiddleware(this.authenticationMiddleware)
+            createExpressMiddleware(this.authenticationMiddleware, this.iocContainer)
             : null;
 
         // Get endpoints from the Reflect metadata
@@ -101,7 +101,7 @@ export class HorsServer {
 
             // Convert endpoint middlewares into express middlewares
             const expressMiddleware: express.RequestHandler[] = middleware.map(middleware =>
-                createExpressMiddleware(middleware));
+                createExpressMiddleware(middleware, this.iocContainer));
 
             // Add authentication middleware into beginning of the middleware array
             // if endpoint needs a auhenticaiton
