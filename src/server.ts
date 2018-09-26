@@ -17,6 +17,9 @@ type EndpointRegisterType = {
     isPublic: boolean;
 };
 
+export type ExpressConfigurationHandler = (app: express.Express, iocContainer: Container) => void;
+export type IocContainerConfigurationHandler = (iocContainer: Container) => void;
+
 export class HorsServer {
 
     private iocContainer: Container = new Container();
@@ -24,6 +27,7 @@ export class HorsServer {
     private authenticationMiddleware: EndpointMiddleware = null;
     private errorHandler: EndpointErrorHandler = null;
     private notFoundHandler: EndpointHandler = null;
+    private expressConfigurationHandler: ExpressConfigurationHandler = null;
 
     // Hooks
     public onTransactionStart: IBindSimpleEvent<Transaction> = new SimpleEvent<Transaction>();
@@ -32,6 +36,12 @@ export class HorsServer {
     public onRegisterEndpoint: IBindSimpleEvent<EndpointRegisterType> = new SimpleEvent<EndpointRegisterType>();
 
     public start(port: number): HorsServer {
+        // Run express configuration handler if any. This has to be done here so
+        // iocContainer is configured and ready for use
+        if (typeof this.expressConfigurationHandler === 'function') {
+            this.expressConfigurationHandler(this.app, this.iocContainer);
+        }
+
         // Register middleware to add transaction into request object
         this.app.use(this.createAddTransactionMiddleware());
 
@@ -59,13 +69,13 @@ export class HorsServer {
         return this;
     }
 
-    public configureIocContainer(handler: (container: Container) => void): HorsServer {
+    public configureIocContainer(handler: IocContainerConfigurationHandler): HorsServer {
         handler(this.iocContainer);
         return this;
     }
 
-    public configureExpressInstance(handler: (app: express.Express) => void): HorsServer {
-        handler(this.app);
+    public configureExpressInstance(handler: ExpressConfigurationHandler): HorsServer {
+        this.expressConfigurationHandler = handler;
         return this;
     }
 
