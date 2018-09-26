@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, CookieOptions } from 'express';
 
 export type TransactionRequestInfo = {
     correlationId: string;
@@ -53,8 +53,8 @@ export class Transaction<UserType = any> {
         return this.user;
     }
 
-    public setCookie(name: string, value: string) {
-        this.response.cookie(name, value);
+    public setCookie(name: string, value: string, options?: CookieOptions) {
+        this.response.cookie(name, value, options);
     }
 
     public setUser(user: UserType) {
