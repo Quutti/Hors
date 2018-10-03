@@ -53,6 +53,10 @@ export class Transaction<UserType = any> {
         return this.user;
     }
 
+    public redirect(url: string): void {
+        this.response.redirect(url);
+    }
+
     public setCookie(name: string, value: string, options?: CookieOptions) {
         this.response.cookie(name, value, options);
     }
