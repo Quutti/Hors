@@ -25,8 +25,8 @@ export class HorsServer {
     private iocContainer: Container = new Container();
     private app: express.Express = express();
     private authenticationMiddleware: EndpointMiddleware = null;
-    private errorHandler: EndpointErrorHandler = null;
-    private notFoundHandler: EndpointHandler = null;
+    private errorHandler: EndpointErrorHandler = (transaction: Transaction) => transaction.send.internalServerError();
+    private notFoundHandler: EndpointHandler = (transaction: Transaction) => transaction.send.notFound();
     private expressConfigurationHandler: ExpressConfigurationHandler = null;
 
     // Hooks
