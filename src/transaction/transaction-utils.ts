@@ -17,10 +17,10 @@ export const createExpressHandler = (handler: EndpointHandler): RequestHandler =
 /**
  * Converts a transaction error handler into Express error handler
  */
-export const createExpressErrorHandler = (handler: EndpointErrorHandler): ErrorRequestHandler => {
+export const createExpressErrorHandler = (handler: EndpointErrorHandler, iocContainer: Container): ErrorRequestHandler => {
     return (error, request: RequestWithTransaction) => {
         const { transaction } = request;
-        handler(transaction, error);
+        handler(transaction, iocContainer, error);
     }
 }
 

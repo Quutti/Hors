@@ -136,7 +136,7 @@ export class HorsServer {
 
         // Register not found and error handlers
         this.notFoundHandler && this.app.use(createExpressHandler(this.notFoundHandler));
-        this.errorHandler && this.app.use(createExpressErrorHandler(this.errorHandler));
+        this.errorHandler && this.app.use(createExpressErrorHandler(this.errorHandler, this.iocContainer));
     }
 
     /**
