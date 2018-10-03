@@ -67,14 +67,7 @@ export class Transaction<UserType = any> {
 
 }
 
-type SendPayload = { [key: string]: any } | Array<{ [key: string]: any }>;
-type SendError = any | any[];
-
-type SendEnvelope = {
-    statusCode: number;
-    payload?: SendPayload;
-    errors?: SendError[];
-}
+type SendData = string | Buffer | { [key: string]: any } | Array<{ [key: string]: any }>;
 
 class Send {
     private response: Response = null;
@@ -85,11 +78,11 @@ class Send {
         this.onEndCallback = onEndCallback;
     }
 
-    public ok(payload?: SendPayload) {
+    public ok(payload?: SendData) {
         this.send(200, payload);
     }
 
-    public created(payload?: SendPayload) {
+    public created(payload?: SendData) {
         this.send(201, payload);
     }
 
@@ -97,58 +90,40 @@ class Send {
         this.send(204);
     }
 
-    public badRequest(errorOrArray?: SendError) {
-        this.sendError(400, errorOrArray);
+    public badRequest(payload?: SendData) {
+        this.send(400, payload);
     }
 
-    public unauthorized(errorOrArray?: SendError) {
-        this.sendError(401, errorOrArray);
+    public unauthorized(payload?: SendData) {
+        this.send(401, payload);
     }
 
-    public forbidden(errorOrArray?: SendError) {
-        this.sendError(403, errorOrArray);
+    public forbidden(payload?: SendData) {
+        this.send(403, payload);
     }
 
-    public notFound(errorOrArray?: SendError) {
-        this.sendError(404, errorOrArray);
+    public notFound(payload?: SendData) {
+        this.send(404, payload);
     }
 
-    public methodNotAllowed(errorOrArray?: SendError) {
-        this.sendError(405, errorOrArray);
+    public methodNotAllowed(payload?: SendData) {
+        this.send(405, payload);
     }
 
-    public internalServerError(errorOrArray?: SendError) {
-        this.sendError(500, errorOrArray);
+    public internalServerError(payload?: SendData) {
+        this.send(500, payload);
     }
 
-    private send(statusCode: number, payload?: SendPayload) {
-        const envelope: SendEnvelope = { statusCode };
-
-        if (payload) {
-            envelope.payload = payload;
-        }
-
-        this.finalizeSend(statusCode, envelope);
-    }
-
-    private sendError(statusCode: number, errors: SendError = null) {
-        const envelope: SendEnvelope = { statusCode };
-
-        if (errors) {
-            errors = Array.isArray(errors) ? errors : [errors];
-            envelope.errors = errors;
-        }
-
-        this.finalizeSend(statusCode, envelope);
-    }
-
-    private finalizeSend(statusCode: number, envelope: SendEnvelope) {
+    private send(statusCode: number, payload?: SendData) {
         this.response
             .status(statusCode)
-            .json(envelope);
+            // Send automatically sets the correct Content-Type if
+            // data is Buffer, string or an normal object (...or array)
+            .send(payload);
 
         this.onEndCallback();
     }
+
 }
 
 export default Transaction;
