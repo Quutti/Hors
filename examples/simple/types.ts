@@ -11,6 +11,7 @@ export interface IRepository<T> {
 export interface HorseEntity {
     id?: number;
     color: string;
+    name: string;
     legCount: number;
     weight: number;
 }

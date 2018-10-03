@@ -19,9 +19,15 @@ const expressAppConfigurer = (expressApp: Express) => {
  * Composition root for injecting stuff into IOC container
  */
 const iocContainerConfigurer = (iocContainer: Container) => {
+    const horseRepository = new HorseRepository();
+
+    // Add couple of horses into repository
+    horseRepository.insert({ color: 'brown', name: 'Cookiecharm', legCount: 4, weight: 421 });
+    horseRepository.insert({ color: 'white', name: 'Three-leg-hevone', legCount: 3, weight: 678 })
+
     iocContainer
         .bind<types.IRepository<types.HorseEntity>>(types.SymbolHorseRepository)
-        .to(HorseRepository);
+        .toConstantValue(horseRepository);
 }
 
 // Create instance of HorsServer and configure express app and IOC container with
