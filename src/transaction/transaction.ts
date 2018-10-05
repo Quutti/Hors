@@ -86,6 +86,8 @@ class Send {
         this.onEndCallback = onEndCallback;
     }
 
+    /* Successful */
+
     public ok(payload?: SendData) {
         this.send(200, payload);
     }
@@ -94,9 +96,33 @@ class Send {
         this.send(201, payload);
     }
 
+    public accepted(payload?: SendData) {
+        this.send(202, payload);
+    }
+
     public noContent() {
         this.send(204);
     }
+
+    public partialContent(payload?: SendData) {
+        this.send(206, payload);
+    }
+
+    /* Redirection */
+
+    public movedPermanently(payload?: SendData) {
+        this.send(301, payload);
+    }
+
+    public found(payload?: SendData) {
+        this.send(302, payload);
+    }
+
+    public notModified(payload?: SendData) {
+        this.send(304, payload);
+    }
+
+    /* Client error */
 
     public badRequest(payload?: SendData) {
         this.send(400, payload);
@@ -118,9 +144,17 @@ class Send {
         this.send(405, payload);
     }
 
+    /* Server error */
+
     public internalServerError(payload?: SendData) {
         this.send(500, payload);
     }
+
+    public notImplemented(payload?: SendData) {
+        this.send(501, payload);
+    }
+
+    /* Tools */
 
     private send(statusCode: number, payload?: SendData) {
         this.response
