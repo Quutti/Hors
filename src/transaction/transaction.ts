@@ -33,6 +33,14 @@ export class Transaction<UserType = any> {
         return this.request.cookies || {};
     }
 
+    public getExpressRequest(): Request {
+        return this.request;
+    }
+
+    public getExpressResponse(): Response {
+        return this.response;
+    }
+
     public getParams(): { [key: string]: any } {
         return this.request.params;
     }
