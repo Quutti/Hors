@@ -1,4 +1,4 @@
-import { Request, Response, CookieOptions } from 'express';
+import { Request, Response, CookieOptions, NextFunction } from 'express';
 
 export type TransactionRequestInfo = {
     correlationId: string;
@@ -15,6 +15,7 @@ export class Transaction<UserType = any> {
     private correlationId: string = null;
     private request: Request = null;
     private response: Response = null;
+    private nextFunction: NextFunction = null;
     private user: UserType = null;
 
     constructor(request: Request, response: Response, correlationId: string, onEndCallback: OnTransactionEndCallback) {
@@ -31,6 +32,10 @@ export class Transaction<UserType = any> {
 
     public getCookies(): { [key: string]: any } {
         return this.request.cookies || {};
+    }
+
+    public getExpressNextFunction(): NextFunction {
+        return this.nextFunction;
     }
 
     public getExpressRequest(): Request {
@@ -67,6 +72,10 @@ export class Transaction<UserType = any> {
 
     public setCookie(name: string, value: string, options?: CookieOptions) {
         this.response.cookie(name, value, options);
+    }
+
+    public setExpressNextFunction(next: NextFunction) {
+        this.nextFunction = next;
     }
 
     public setUser(user: UserType) {

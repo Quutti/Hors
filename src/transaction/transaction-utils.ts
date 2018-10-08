@@ -8,8 +8,12 @@ import { EndpointHandler, EndpointErrorHandler, EndpointMiddleware, RequestWithT
  * Converts a transaction based endpoint handler into Express endpoint handler
  */
 export const createExpressHandler = (handler: EndpointHandler): RequestHandler => {
-    return (request: RequestWithTransaction) => {
+    return (request: RequestWithTransaction, response, next) => {
         const { transaction } = request;
+
+        // Set next function to transaction to be used later if needed
+        transaction.setExpressNextFunction(next);
+
         handler(transaction);
     }
 }
