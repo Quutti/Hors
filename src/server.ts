@@ -1,5 +1,6 @@
 import { Container } from 'inversify';
 import * as express from 'express';
+import { Server } from 'http';
 import * as uuid from 'uuid';
 import 'reflect-metadata';
 
@@ -24,6 +25,7 @@ export class HorsServer {
 
     private iocContainer: Container = new Container();
     private app: express.Express = express();
+    private httpServerInstance: Server = null;
     private authenticationMiddleware: EndpointMiddleware = null;
     private errorHandler: EndpointErrorHandler = (transaction: Transaction) => transaction.send.internalServerError();
     private notFoundHandler: EndpointHandler = (transaction: Transaction) => transaction.send.notFound();
@@ -35,7 +37,8 @@ export class HorsServer {
     public onListen: IBindSimpleEvent<number> = new SimpleEvent<number>();
     public onRegisterEndpoint: IBindSimpleEvent<EndpointRegisterType> = new SimpleEvent<EndpointRegisterType>();
 
-    public start(port: number): HorsServer {
+    public start(port: number): Promise<void> {
+
         // Run express configuration handler if any. This has to be done here so
         // iocContainer is configured and ready for use
         if (typeof this.expressConfigurationHandler === 'function') {
@@ -49,9 +52,22 @@ export class HorsServer {
         this.registerEndpoints();
 
         // Trigger a onListen hook when server starts listening the given port
-        this.app.listen(port, () => (this.onListen as SimpleEvent<number>).fire(port));
+        return new Promise(resolve => {
+            this.httpServerInstance = this.app.listen(port, () => {
+                (this.onListen as SimpleEvent<number>).fire(port);
+                resolve();
+            });
+        });
+    }
 
-        return this;
+    public stop(): Promise<void> {
+        return new Promise(resolve => {
+            if (!this.httpServerInstance) {
+                return resolve();
+            }
+
+            this.httpServerInstance.close(() => resolve());
+        });
     }
 
     public setAuthenticationMiddleware(middleware: EndpointMiddleware): HorsServer {
@@ -77,6 +93,10 @@ export class HorsServer {
     public configureExpressInstance(handler: ExpressConfigurationHandler): HorsServer {
         this.expressConfigurationHandler = handler;
         return this;
+    }
+
+    public getExpressInstance(): express.Express {
+        return this.app;
     }
 
     /**
