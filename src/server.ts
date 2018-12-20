@@ -122,13 +122,6 @@ export class HorsServer {
             const { method, public: isPublic, target, middleware } = endpoint;
             const url = prefixUrl(endpoint.url);
 
-            // Set target into iocContainer and retrieve it immediatly,
-            // by doing this we have now instance with dependencies injected
-            // by inversify
-            this.iocContainer.bind(target).toSelf();
-            const instance = this.iocContainer.get<Endpoint>(target);
-            const handler = instance.handle.bind(instance);
-
             // Convert endpoint middlewares into express middlewares
             const expressMiddleware: express.RequestHandler[] = middleware.map(middleware =>
                 createExpressMiddleware(middleware, this.iocContainer));
@@ -150,7 +143,18 @@ export class HorsServer {
             this.app[method](
                 url,
                 expressMiddleware,
-                createExpressHandler(handler)
+                (req, res, next) => {
+                    // Set target into iocContainer and retrieve it immediatly,
+                    // by doing this we have now instance with dependencies injected
+                    // by inversify
+                    this.iocContainer.bind(target).toSelf();
+
+                    const instance = this.iocContainer.get<Endpoint>(target);
+                    const handler = instance.handle.bind(instance);
+
+                    this.iocContainer.unbind(target);
+                    createExpressHandler(handler)(req, res, next);
+                }
             );
         });
 
